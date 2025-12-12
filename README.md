@@ -1,36 +1,148 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TeleMed - Plataforma de Telemedicina
 
-## Getting Started
+Plataforma completa de telemedicina moderna e segura para o mercado brasileiro, construída com Next.js 14+, Supabase, e integração com IA.
 
-First, run the development server:
+## 🚀 Funcionalidades
 
+### Autenticação e Perfis
+- ✅ Login/Registro com email e senha
+- ✅ Recuperação de senha
+- ✅ Onboarding diferenciado para médicos e pacientes
+- ✅ Sistema de roles (patient, doctor, admin, attendant)
+
+### Dashboards
+- ✅ Dashboard personalizado por role
+- ✅ Estatísticas e métricas
+- ✅ Quick actions
+
+### Agendamento
+- Sistema de agendamento de consultas
+- Calendário mensal/semanal/diário
+- Seleção de médico por especialidade
+- Confirmação e lembretes via email
+
+### Videochamadas
+- Integração com Daily.co
+- Sala de espera virtual
+- Controles de áudio/vídeo
+- Gravação de consultas
+
+### Inteligência Artificial
+- ✅ Resumo automático de documentos médicos
+- ✅ Geração de prontuário eletrônico (formato SOAP)
+- ✅ Elaboração de laudos médicos
+
+### Documentos
+- Upload e gestão de documentos
+- Categorização e tags
+- Busca full-text
+- Compartilhamento seguro
+
+### Assinatura Digital
+- Integração com DocuSign/ClickSign
+- Fluxo de assinatura digital
+- Validação ICP-Brasil
+
+### Sistema de Vendas
+- Catálogo de serviços
+- Checkout integrado
+- Histórico de compras
+
+### Atendimento
+- Chat em tempo real
+- Sistema de tickets
+- Base de conhecimento
+
+### Área Administrativa
+- Gestão de usuários e médicos
+- Relatórios financeiros
+- Logs de auditoria (LGPD)
+
+## 🛠️ Stack Tecnológica
+
+- **Frontend/Backend**: Next.js 14+ (App Router, TypeScript)
+- **Banco de Dados**: Supabase (PostgreSQL)
+- **Autenticação**: Supabase Auth
+- **UI**: shadcn/ui + Tailwind CSS
+- **State Management**: Zustand
+- **Forms**: React Hook Form + Zod
+- **Data Fetching**: TanStack Query
+- **IA**: OpenAI GPT-4
+- **Videochamadas**: Daily.co
+- **Pagamentos**: Stripe / Asaas
+- **Email**: Resend
+
+## 📦 Instalação
+
+1. Clone o repositório:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repo-url>
+cd telemed
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Instale as dependências:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Configure as variáveis de ambiente:
+```bash
+cp .env.local.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Preencha as variáveis de ambiente com suas credenciais:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `OPENAI_API_KEY`
+- `DAILY_API_KEY`
+- E outras conforme necessário
 
-## Learn More
+4. Execute o schema SQL no Supabase:
+```bash
+# Copie o conteúdo de supabase/schema.sql e execute no SQL Editor do Supabase
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. Inicie o servidor de desenvolvimento:
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Estrutura do Projeto
 
-## Deploy on Vercel
+```
+src/
+├── app/                    # App Router do Next.js
+│   ├── (auth)/            # Rotas de autenticação
+│   ├── (dashboard)/       # Rotas do dashboard
+│   ├── api/               # API Routes
+│   └── ...
+├── components/            # Componentes React
+│   ├── ui/               # Componentes shadcn/ui
+│   └── ...
+├── lib/                  # Utilitários e helpers
+│   ├── supabase/         # Cliente Supabase
+│   ├── ai/               # Integração OpenAI
+│   ├── video/            # Integração Daily.co
+│   └── ...
+├── types/                # TypeScript types
+└── hooks/                # Custom hooks
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔐 Segurança
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- ✅ Row Level Security (RLS) configurado em todas as tabelas
+- ✅ Validação de entrada com Zod
+- ✅ HTTPS obrigatório
+- ✅ Logs de auditoria (LGPD compliance)
+- ✅ Rate limiting nas APIs
+
+## 📝 Licença
+
+Este projeto é privado e proprietário.
+
+## 🤝 Contribuindo
+
+Este é um projeto interno. Para sugestões e melhorias, entre em contato com a equipe de desenvolvimento.
