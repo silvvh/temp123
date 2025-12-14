@@ -1,0 +1,20 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="180" height="180" fill="#000000"/>
+  
+  <!-- Laptop Screen (lighter blue/cyan) -->
+  <rect x="30" y="40" width="120" height="80" rx="10" fill="#4FC3F7"/>
+  
+  <!-- Laptop Body (darker blue/cyan) -->
+  <rect x="15" y="120" width="150" height="12" rx="6" fill="#0288D1"/>
+  <rect x="70" y="132" width="40" height="6" rx="3" fill="#0288D1"/>
+  
+  <!-- Medical Cross on Screen (darker blue/cyan) -->
+  <g transform="translate(90, 80)">
+    <!-- Vertical bar of cross -->
+    <rect x="-10" y="-40" width="20" height="80" rx="10" fill="#0288D1"/>
+    <!-- Horizontal bar of cross -->
+    <rect x="-40" y="-10" width="80" height="20" rx="10" fill="#0288D1"/>
+  </g>
+</svg>
+

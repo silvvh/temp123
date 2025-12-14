@@ -16,8 +16,13 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "TeleMed - Plataforma de Telemedicina",
-  description: "Plataforma completa de telemedicina moderna e segura para o mercado brasileiro",
+  title: "MediConnect",
+  description:
+    "Plataforma completa de telemedicina moderna e segura para o mercado brasileiro",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -26,10 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body
-        className={`${inter.variable} ${manrope.variable} antialiased`}
-      >
+    <html lang="pt-BR" className="h-full">
+      <body className={`${inter.variable} ${manrope.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

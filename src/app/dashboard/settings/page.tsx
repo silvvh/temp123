@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Bell, Shield, CreditCard } from "lucide-react";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { User, Bell, Shield, CreditCard, Settings as SettingsIcon } from "lucide-react";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -23,11 +24,14 @@ export default async function SettingsPage() {
     .single();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Configurações</h1>
-        <p className="text-muted-foreground">Gerencie suas preferências e informações</p>
-      </div>
+    <div className="h-full bg-gray-50">
+      <PageHeader
+        icon={SettingsIcon}
+        title="Configurações"
+        description="Gerencie suas preferências e informações"
+      />
+
+      <main className="px-4 sm:px-6 lg:px-8 py-8">
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -142,6 +146,7 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+      </main>
     </div>
   );
 }

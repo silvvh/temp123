@@ -52,3 +52,4 @@ CREATE POLICY "Doctors can create medical records"
   WITH CHECK (doctor_id = auth.uid());
 
 
+

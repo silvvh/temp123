@@ -1,113 +1,226 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
+
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Upload, Search, Filter } from "lucide-react";
-import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { DocumentUpload } from "@/components/documents/document-upload";
+import { FileText, Download, Trash2, Calendar, Filter } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
-export default async function DocumentsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+interface Document {
+  id: string;
+  file_name: string;
+  file_size: number;
+  file_type: string;
+  storage_path: string;
+  category: string;
+  uploaded_at: string;
+}
 
-  if (!user) {
-    redirect("/login");
+export default function DocumentsPage() {
+  const supabase = createClient();
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<string>("all");
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [filter]);
+
+  async function fetchDocuments() {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      let query = supabase
+        .from("medical_documents")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("uploaded_at", { ascending: false });
+
+      if (filter !== "all") {
+        query = query.eq("category", filter);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setDocuments(data || []);
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  async function handleDownload(doc: Document) {
+    try {
+      const { data, error } = await supabase.storage
+        .from("medical-documents")
+        .download(doc.storage_path);
 
-  // Buscar documentos do usuário
-  const { data: documents } = await supabase
-    .from("documents")
-    .select("*")
-    .eq(profile?.role === "patient" ? "patient_id" : "uploaded_by", user.id)
-    .order("created_at", { ascending: false })
-    .limit(20);
+      if (error) throw error;
 
-  const categories = ["Laudo", "Prontuário", "Exame", "Receita", "Atestado"];
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = doc.file_name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download error:", error);
+      alert("Erro ao baixar arquivo");
+    }
+  }
+
+  async function handleDelete(doc: Document) {
+    if (!confirm("Tem certeza que deseja deletar este documento?")) return;
+
+    try {
+      // Deletar do storage
+      const { error: storageError } = await supabase.storage
+        .from("medical-documents")
+        .remove([doc.storage_path]);
+
+      if (storageError) throw storageError;
+
+      // Deletar do banco
+      const { error: dbError } = await supabase
+        .from("medical_documents")
+        .delete()
+        .eq("id", doc.id);
+
+      if (dbError) throw dbError;
+
+      fetchDocuments();
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Erro ao deletar documento");
+    }
+  }
+
+  const categoryColors = {
+    exam: "bg-blue-100 text-blue-700",
+    prescription: "bg-green-100 text-green-700",
+    report: "bg-purple-100 text-purple-700",
+    other: "bg-gray-100 text-gray-700",
+  };
+
+  const categoryLabels = {
+    exam: "Exame",
+    prescription: "Receita",
+    report: "Laudo",
+    other: "Outro",
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Documentos</h1>
-          <p className="text-muted-foreground">Gerencie seus documentos médicos</p>
-        </div>
-        <Button>
-          <Upload className="mr-2 h-4 w-4" />
-          Upload de Documentos
-        </Button>
+    <div className="p-8 space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold mb-2">Meus Documentos</h1>
+        <p className="text-gray-500">Gerencie seus documentos médicos</p>
       </div>
 
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Buscar documentos..."
-              className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background"
-            />
-          </div>
-        </div>
-        <Button variant="outline">
-          <Filter className="mr-2 h-4 w-4" />
-          Filtros
-        </Button>
-      </div>
+      {/* Upload */}
+      <DocumentUpload onUploadComplete={fetchDocuments} />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {documents && documents.length > 0 ? (
-          documents.map((doc: any) => (
-            <Card key={doc.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <FileText className="h-8 w-8 text-primary" />
-                  <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
-                    {doc.category}
-                  </span>
-                </div>
-                <CardTitle className="text-lg">{doc.file_name}</CardTitle>
-                <CardDescription>
-                  {new Date(doc.created_at).toLocaleDateString("pt-BR")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {doc.ai_summary && (
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-                    {doc.ai_summary}
-                  </p>
-                )}
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    Visualizar
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    Download
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <div className="col-span-full text-center py-12">
-            <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground mb-4">
-              Nenhum documento encontrado
-            </p>
-            <Button>
-              <Upload className="mr-2 h-4 w-4" />
-              Upload de Documentos
+      {/* Filtros */}
+      <div className="flex items-center gap-3">
+        <Filter className="w-5 h-5 text-gray-400" />
+        <div className="flex gap-2">
+          {["all", "exam", "prescription", "report", "other"].map((cat) => (
+            <Button
+              key={cat}
+              variant={filter === cat ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilter(cat)}
+            >
+              {cat === "all"
+                ? "Todos"
+                : categoryLabels[cat as keyof typeof categoryLabels]}
             </Button>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
+
+      {/* Lista de Documentos */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Documentos ({documents.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-gray-500">Carregando documentos...</p>
+            </div>
+          ) : documents.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">Nenhum documento encontrado</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {documents.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition"
+                >
+                  <FileText className="w-10 h-10 text-gray-400" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{doc.file_name}</p>
+                    <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                      <span>{(doc.file_size / 1024).toFixed(1)} KB</span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {format(new Date(doc.uploaded_at), "dd/MM/yyyy", {
+                          locale: ptBR,
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  <Badge
+                    className={
+                      categoryColors[
+                        doc.category as keyof typeof categoryColors
+                      ]
+                    }
+                  >
+                    {
+                      categoryLabels[
+                        doc.category as keyof typeof categoryLabels
+                      ]
+                    }
+                  </Badge>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownload(doc)}
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(doc)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
-

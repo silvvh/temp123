@@ -1,59 +1,69 @@
-# TeleMed - Plataforma de Telemedicina
+# MediConnect - Plataforma de Telemedicina
 
 Plataforma completa de telemedicina moderna e segura para o mercado brasileiro, construída com Next.js 14+, Supabase, e integração com IA.
 
 ## 🚀 Funcionalidades
 
 ### Autenticação e Perfis
+
 - ✅ Login/Registro com email e senha
 - ✅ Recuperação de senha
 - ✅ Onboarding diferenciado para médicos e pacientes
 - ✅ Sistema de roles (patient, doctor, admin, attendant)
 
 ### Dashboards
+
 - ✅ Dashboard personalizado por role
 - ✅ Estatísticas e métricas
 - ✅ Quick actions
 
 ### Agendamento
+
 - Sistema de agendamento de consultas
 - Calendário mensal/semanal/diário
 - Seleção de médico por especialidade
 - Confirmação e lembretes via email
 
 ### Videochamadas
+
 - Integração com Daily.co
 - Sala de espera virtual
 - Controles de áudio/vídeo
 - Gravação de consultas
 
 ### Inteligência Artificial
+
 - ✅ Resumo automático de documentos médicos
 - ✅ Geração de prontuário eletrônico (formato SOAP)
 - ✅ Elaboração de laudos médicos
 
 ### Documentos
+
 - Upload e gestão de documentos
 - Categorização e tags
 - Busca full-text
 - Compartilhamento seguro
 
 ### Assinatura Digital
+
 - Integração com DocuSign/ClickSign
 - Fluxo de assinatura digital
 - Validação ICP-Brasil
 
 ### Sistema de Vendas
+
 - Catálogo de serviços
 - Checkout integrado
 - Histórico de compras
 
 ### Atendimento
+
 - Chat em tempo real
 - Sistema de tickets
 - Base de conhecimento
 
 ### Área Administrativa
+
 - Gestão de usuários e médicos
 - Relatórios financeiros
 - Logs de auditoria (LGPD)
@@ -75,22 +85,26 @@ Plataforma completa de telemedicina moderna e segura para o mercado brasileiro, 
 ## 📦 Instalação
 
 1. Clone o repositório:
+
 ```bash
 git clone <repo-url>
 cd telemed
 ```
 
 2. Instale as dependências:
+
 ```bash
 npm install
 ```
 
 3. Configure as variáveis de ambiente:
+
 ```bash
 cp .env.local.example .env.local
 ```
 
 Preencha as variáveis de ambiente com suas credenciais:
+
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
@@ -99,11 +113,13 @@ Preencha as variáveis de ambiente com suas credenciais:
 - E outras conforme necessário
 
 4. Execute o schema SQL no Supabase:
+
 ```bash
 # Copie o conteúdo de supabase/schema.sql e execute no SQL Editor do Supabase
 ```
 
 5. Inicie o servidor de desenvolvimento:
+
 ```bash
 npm run dev
 ```

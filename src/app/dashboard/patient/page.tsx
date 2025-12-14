@@ -1,9 +1,23 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatCard } from "@/components/dashboard/stat-card";
+import { AppointmentCard } from "@/components/dashboard/appointment-card";
+import { QuickActions } from "@/components/dashboard/quick-actions";
+import { EmptyState } from "@/components/dashboard/empty-state";
 import { Button } from "@/components/ui/button";
+import {
+  Calendar,
+  FileText,
+  Clock,
+  Heart,
+  ArrowRight,
+  ChevronRight,
+  Sparkles,
+  MessageCircle,
+} from "lucide-react";
 import Link from "next/link";
-import { Calendar, FileText, Clock } from "lucide-react";
+import { format, formatDistance } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default async function PatientDashboardPage() {
   const supabase = await createClient();
@@ -11,6 +25,7 @@ export default async function PatientDashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Autenticação já é verificada no layout, mas precisamos do user para queries
   if (!user) {
     redirect("/login");
   }
@@ -21,6 +36,7 @@ export default async function PatientDashboardPage() {
     .eq("id", user.id)
     .single();
 
+  // Verificar role específica
   if (profile?.role !== "patient") {
     redirect("/dashboard");
   }
@@ -34,7 +50,7 @@ export default async function PatientDashboardPage() {
     .gte("scheduled_at", new Date().toISOString())
     .order("scheduled_at", { ascending: true })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   // Buscar histórico de consultas
   const { data: recentAppointments } = await supabase
@@ -44,115 +60,242 @@ export default async function PatientDashboardPage() {
     .order("scheduled_at", { ascending: false })
     .limit(5);
 
+  // Buscar documentos recentes
+  const { data: recentDocuments } = await supabase
+    .from("documents")
+    .select("*")
+    .eq("patient_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(3);
+
+  // Estatísticas
+  const { count: totalAppointments } = await supabase
+    .from("appointments")
+    .select("*", { count: "exact", head: true })
+    .eq("patient_id", user.id);
+
+  const { count: totalDocuments } = await supabase
+    .from("documents")
+    .select("*", { count: "exact", head: true })
+    .eq("patient_id", user.id);
+
+  const nextAppointmentDate = nextAppointment?.scheduled_at
+    ? new Date(nextAppointment.scheduled_at)
+    : null;
+  const nextAppointmentTime = nextAppointmentDate
+    ? format(nextAppointmentDate, "HH:mm", { locale: ptBR })
+    : null;
+  const nextAppointmentDateFormatted = nextAppointmentDate
+    ? formatDistance(nextAppointmentDate, new Date(), {
+        locale: ptBR,
+        addSuffix: true,
+      })
+    : "Nenhuma";
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Dashboard do Paciente</h1>
-        <p className="text-muted-foreground">Bem-vindo, {profile?.full_name}</p>
+    <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      {/* Welcome Section */}
+      <div>
+        <h1 className="text-3xl font-bold mb-2">
+          Olá, {profile?.full_name || "Usuário"}! 👋
+        </h1>
+        <p className="text-gray-500">
+          Bem-vindo de volta. Aqui está um resumo da sua saúde.
+        </p>
       </div>
 
-      {nextAppointment && (
-        <Card className="mb-8 border-primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Próxima Consulta
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <p className="text-lg font-semibold">
-                {new Date(nextAppointment.scheduled_at).toLocaleString("pt-BR", {
-                  dateStyle: "full",
-                  timeStyle: "short",
-                })}
-              </p>
-              <p className="text-muted-foreground">
-                Dr(a).{" "}
-                {nextAppointment.doctors?.profiles?.full_name || "Médico"}
-              </p>
-              <div className="flex gap-2 mt-4">
-                <Button asChild>
-                  <Link href={`/dashboard/consultations/${nextAppointment.id}`}>
-                    Acessar Consulta
-                  </Link>
-                </Button>
-                <Button variant="outline">Reagendar</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Quick Actions */}
+      <QuickActions />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Histórico de Consultas</CardTitle>
-            <CardDescription>Suas últimas consultas</CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          icon={<Calendar className="w-5 h-5" />}
+          label="Próxima Consulta"
+          value={
+            nextAppointmentDate
+              ? nextAppointmentTime || "Hoje"
+              : "Nenhuma"
+          }
+          trend={nextAppointmentDateFormatted}
+          color="blue"
+        />
+        <StatCard
+          icon={<FileText className="w-5 h-5" />}
+          label="Documentos"
+          value={totalDocuments?.toString() || "0"}
+          trend="+3 este mês"
+          color="green"
+        />
+        <StatCard
+          icon={<Clock className="w-5 h-5" />}
+          label="Consultas Realizadas"
+          value={totalAppointments?.toString() || "0"}
+          trend="+2 este mês"
+          color="purple"
+        />
+        <StatCard
+          icon={<Heart className="w-5 h-5" />}
+          label="Saúde Geral"
+          value="Boa"
+          trend="Sem alertas"
+          color="red"
+        />
+      </div>
+
+      {/* Main Grid */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Column - Appointments */}
+        <div className="lg:col-span-2 space-y-6">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Próximas Consultas</h2>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/dashboard/consultations">
+                  Ver todas
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
+
             {recentAppointments && recentAppointments.length > 0 ? (
               <div className="space-y-4">
-                {recentAppointments.map((appointment: any) => (
-                  <div
-                    key={appointment.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
+                {recentAppointments.slice(0, 2).map((appointment: any) => {
+                  const appointmentDate = new Date(appointment.scheduled_at);
+                  const doctorName =
+                    appointment.doctors?.profiles?.full_name || "Médico";
+                  const isUpcoming =
+                    appointmentDate > new Date() &&
+                    appointment.status === "confirmed";
+
+                  return (
+                    <AppointmentCard
+                      key={appointment.id}
+                      doctor={doctorName}
+                      specialty="Especialidade"
+                      date={format(appointmentDate, "dd 'de' MMMM", {
+                        locale: ptBR,
+                      })}
+                      time={format(appointmentDate, "HH:mm", {
+                        locale: ptBR,
+                      })}
+                      status={
+                        appointment.status === "completed"
+                          ? "completed"
+                          : isUpcoming
+                          ? "confirmed"
+                          : "pending"
+                      }
+                      appointmentId={appointment.id}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-gray-200 p-8">
+                <EmptyState
+                  iconName="calendar"
+                  title="Nenhuma consulta agendada"
+                  description="Agende sua primeira consulta com um de nossos especialistas."
+                  actionLabel="Agendar Consulta"
+                  actionHref="/dashboard/schedule"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Recent Documents */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Documentos Recentes</h2>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/dashboard/documents">Ver todos</Link>
+              </Button>
+            </div>
+
+            {recentDocuments && recentDocuments.length > 0 ? (
+              <div className="bg-white rounded-xl border border-gray-200 divide-y">
+                {recentDocuments.map((doc: any) => (
+                  <Link
+                    key={doc.id}
+                    href={`/dashboard/documents/${doc.id}`}
+                    className="block w-full p-4 flex items-center gap-4 hover:bg-gray-50 transition text-left"
                   >
-                    <div>
-                      <p className="font-medium">
-                        {new Date(appointment.scheduled_at).toLocaleDateString("pt-BR")}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {appointment.doctors?.profiles?.full_name || "Médico"}
-                      </p>
-                      <span
-                        className={`inline-block mt-1 px-2 py-1 text-xs rounded ${
-                          appointment.status === "completed"
-                            ? "bg-success/10 text-success"
-                            : "bg-warning/10 text-warning"
-                        }`}
-                      >
-                        {appointment.status === "completed" ? "Concluída" : "Agendada"}
-                      </span>
+                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5 text-blue-600" />
                     </div>
-                  </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{doc.name}</p>
+                      <p className="text-sm text-gray-500">
+                        {doc.category || "Documento"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-gray-500">
+                        {formatDistance(
+                          new Date(doc.created_at),
+                          new Date(),
+                          { locale: ptBR, addSuffix: true }
+                        )}
+                      </span>
+                      <ChevronRight className="w-5 h-5 text-gray-400" />
+                    </div>
+                  </Link>
                 ))}
               </div>
             ) : (
-              <p className="text-muted-foreground text-center py-4">
-                Nenhuma consulta realizada ainda
-              </p>
+              <div className="bg-white rounded-xl border border-gray-200 p-8">
+                <EmptyState
+                  iconName="file"
+                  title="Nenhum documento"
+                  description="Seus documentos médicos aparecerão aqui."
+                  actionLabel="Ver Documentos"
+                  actionHref="/dashboard/documents"
+                />
+              </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Documentos Disponíveis</CardTitle>
-            <CardDescription>Seus documentos médicos</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <Link href="/dashboard/documents">
-                <Button variant="outline" className="w-full justify-start">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Ver Todos os Documentos
-                </Button>
-              </Link>
+        {/* Right Column - Sidebar Info */}
+        <div className="space-y-6">
+          {/* Calendar Widget */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-semibold mb-4">Calendário</h3>
+            <div className="aspect-square bg-gray-50 rounded-lg flex items-center justify-center">
+              <p className="text-sm text-gray-500">Calendário</p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
 
-      <div className="mt-8">
-        <Link href="/dashboard/schedule">
-          <Button size="lg" className="w-full md:w-auto">
-            <Calendar className="mr-2 h-5 w-5" />
-            Agendar Nova Consulta
-          </Button>
-        </Link>
+          {/* Health Tips */}
+          <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-xl border border-primary-100 p-6">
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-primary-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-1">Dica de Saúde</h3>
+                <p className="text-sm text-gray-600">
+                  Beba pelo menos 2 litros de água por dia para manter-se
+                  hidratado.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Support */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-semibold mb-3">Precisa de ajuda?</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Nossa equipe está pronta para ajudar
+            </p>
+            <Button variant="outline" className="w-full" size="sm">
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Iniciar Chat
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
-
