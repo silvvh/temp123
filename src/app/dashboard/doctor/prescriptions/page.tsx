@@ -170,7 +170,7 @@ export default function PrescriptionsPage() {
         instructions: '',
         validUntil: '',
       })
-      loadPrescriptions()
+      await loadPrescriptions()
     } catch (error: any) {
       console.error('Erro ao criar receita:', error)
       toast({
