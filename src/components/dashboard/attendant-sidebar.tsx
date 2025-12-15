@@ -79,7 +79,7 @@ export function AttendantSidebar({ isOpen = true, onClose }: AttendantSidebarPro
         } else {
           setProfile({
             full_name: user.email?.split("@")[0] || "Atendente",
-            email: user.email,
+            email: user.email || null,
           });
         }
       }
