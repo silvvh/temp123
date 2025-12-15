@@ -170,7 +170,10 @@ export default function PrescriptionsPage() {
         instructions: '',
         validUntil: '',
       })
-      await loadPrescriptions()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && userRole) {
+        await loadPrescriptions(user.id, userRole)
+      }
     } catch (error: any) {
       console.error('Erro ao criar receita:', error)
       toast({
