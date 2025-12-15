@@ -19,22 +19,25 @@ export async function GET(request: Request) {
     const now = new Date()
     const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000)
     const in1Hour = new Date(now.getTime() + 60 * 60 * 1000)
+    const in12Hours = new Date(now.getTime() + 12 * 60 * 60 * 1000)
 
-    // Buscar consultas nas próximas 24 horas (com margem de 5 minutos)
+    // Buscar consultas que precisam de lembrete de 24h (entre 23h e 25h no futuro)
     const { data: appointments24h } = await supabase
       .from('appointments')
       .select('id, scheduled_at')
       .eq('status', 'confirmed')
-      .gte('scheduled_at', new Date(in24Hours.getTime() - 5 * 60 * 1000).toISOString())
-      .lte('scheduled_at', new Date(in24Hours.getTime() + 5 * 60 * 1000).toISOString())
+      .gte('scheduled_at', new Date(in24Hours.getTime() - 30 * 60 * 1000).toISOString())
+      .lte('scheduled_at', new Date(in24Hours.getTime() + 30 * 60 * 1000).toISOString())
+      .not('scheduled_at', 'is', null)
 
-    // Buscar consultas na próxima 1 hora
+    // Buscar consultas que precisam de lembrete de 1h (entre 50min e 70min no futuro)
     const { data: appointments1h } = await supabase
       .from('appointments')
       .select('id, scheduled_at')
       .eq('status', 'confirmed')
-      .gte('scheduled_at', new Date(in1Hour.getTime() - 5 * 60 * 1000).toISOString())
-      .lte('scheduled_at', new Date(in1Hour.getTime() + 5 * 60 * 1000).toISOString())
+      .gte('scheduled_at', new Date(in1Hour.getTime() - 10 * 60 * 1000).toISOString())
+      .lte('scheduled_at', new Date(in1Hour.getTime() + 10 * 60 * 1000).toISOString())
+      .not('scheduled_at', 'is', null)
 
     const results = {
       sent24h: 0,
@@ -52,7 +55,6 @@ export async function GET(request: Request) {
           })
           results.sent24h++
         } catch (error) {
-          console.error(`Error sending 24h reminder for ${appointment.id}:`, error)
           results.errors.push({ appointmentId: appointment.id, type: '24h', error })
         }
       }
@@ -68,7 +70,6 @@ export async function GET(request: Request) {
           })
           results.sent1h++
         } catch (error) {
-          console.error(`Error sending 1h reminder for ${appointment.id}:`, error)
           results.errors.push({ appointmentId: appointment.id, type: '1h', error })
         }
       }
@@ -80,7 +81,6 @@ export async function GET(request: Request) {
       results
     })
   } catch (error) {
-    console.error('Cron job error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
