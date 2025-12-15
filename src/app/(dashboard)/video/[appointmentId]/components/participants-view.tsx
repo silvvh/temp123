@@ -1,6 +1,6 @@
 'use client';
 
-import { useParticipantIds, useVideoTrack, useAudioTrack, useParticipant } from '@daily-co/daily-react';
+import { useParticipantIds, useVideoTrack, useAudioTrack, useParticipant, useLocalSessionId } from '@daily-co/daily-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Video, VideoOff } from 'lucide-react';
@@ -26,6 +26,7 @@ function ParticipantTile({ participantId }: { participantId: string }) {
   const videoState = useVideoTrack(participantId);
   const audioState = useAudioTrack(participantId);
   const participant = useParticipant(participantId);
+  const localSessionId = useLocalSessionId();
 
   useEffect(() => {
     if (videoRef.current && videoState.track) {
@@ -33,9 +34,9 @@ function ParticipantTile({ participantId }: { participantId: string }) {
     }
   }, [videoState.track]);
 
-  const isLocal = videoState.isLocal;
-  const isCameraOn = videoState.isOff === false;
-  const isMicOn = audioState.isOff === false;
+  const isLocal = participantId === localSessionId;
+  const isCameraOn = !videoState.isOff;
+  const isMicOn = !audioState.isOff;
 
   return (
     <div className="relative bg-gray-800 rounded-xl overflow-hidden aspect-video">
