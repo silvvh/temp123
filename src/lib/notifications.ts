@@ -43,8 +43,10 @@ export async function sendAppointmentNotification({
       throw new Error('Appointment not found')
     }
 
-    // profiles é um array mesmo em relação 1:1, acessar primeiro elemento
+    // TypeScript não consegue inferir tipos de queries complexas do Supabase
     const appointmentAny = appointment as any
+    
+    // profiles é um array mesmo em relação 1:1, acessar primeiro elemento
     const patientProfilesArray = appointmentAny.patient?.profiles || []
     const doctorProfilesArray = appointmentAny.doctor?.profiles || []
     
@@ -57,7 +59,7 @@ export async function sendAppointmentNotification({
     
     const patientEmail = patientProfiles?.email
     const doctorEmail = doctorProfiles?.email
-    const scheduledDate = new Date(appointment.scheduled_at)
+    const scheduledDate = new Date(appointmentAny.scheduled_at)
     const formattedDate = scheduledDate.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: 'long',

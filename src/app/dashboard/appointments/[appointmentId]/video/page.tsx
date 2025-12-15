@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import DailyIframe from '@daily-co/daily-js'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-export default function VideoCallPage() {
+function VideoCallContent() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
@@ -231,5 +231,17 @@ export default function VideoCallPage() {
       </div>
     </div>
   )
+}
+
+export default function VideoCallPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <VideoCallContent />
+    </Suspense>
+  );
 }
 
