@@ -78,9 +78,9 @@ export async function POST(request: NextRequest) {
       .from("patients")
       .select(`
         id,
+        birth_date,
         profiles!inner (
-          full_name,
-          birth_date
+          full_name
         )
       `)
       .eq("id", appointment.patient_id)
@@ -141,13 +141,15 @@ IMPORTANTE: Sua resposta deve ser APENAS um objeto JSON válido, sem markdown, s
   }
 }`;
 
-    const patientAge = patient.profiles.birth_date
-      ? calculateAge(new Date(patient.profiles.birth_date))
+    // profiles é um array mesmo em relação 1:1, acessar primeiro elemento
+    const profile = Array.isArray(patient.profiles) ? patient.profiles[0] : patient.profiles;
+    const patientAge = patient.birth_date
+      ? calculateAge(new Date(patient.birth_date))
       : "Não informada";
 
     const userPrompt = `Gere um prontuário médico baseado nas seguintes informações:
 
-PACIENTE: ${patient.profiles.full_name}
+PACIENTE: ${profile?.full_name || 'Não informado'}
 IDADE: ${patientAge}
 
 QUEIXA PRINCIPAL: ${chiefComplaint || "Não informado"}

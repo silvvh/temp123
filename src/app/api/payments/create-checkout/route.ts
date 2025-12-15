@@ -38,6 +38,11 @@ export async function POST(request: Request) {
     }
 
     const price = appointment.doctor.consultation_price || 15000 // R$ 150.00 default (em centavos)
+    
+    // profiles é um array mesmo em relação 1:1, acessar primeiro elemento
+    const doctorProfile = Array.isArray(appointment.doctor.profiles) 
+      ? appointment.doctor.profiles[0] 
+      : appointment.doctor.profiles;
 
     // Criar Checkout Session
     const session = await stripe.checkout.sessions.create({
@@ -47,7 +52,7 @@ export async function POST(request: Request) {
           price_data: {
             currency: 'brl',
             product_data: {
-              name: `Consulta com ${appointment.doctor.profiles.full_name}`,
+              name: `Consulta com ${doctorProfile?.full_name || 'Médico'}`,
               description: 'Teleconsulta médica',
             },
             unit_amount: Math.round(price * 100), // Converter para centavos
