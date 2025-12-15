@@ -97,7 +97,7 @@ export default function DoctorDashboardPage() {
         console.error("Error fetching today appointments:", todayError);
       }
 
-      setTodayAppointments(todayAppts || []);
+      setTodayAppointments((todayAppts || []) as any);
 
       // Buscar próximas consultas (não hoje)
       const { data: upcomingAppts } = await supabase
@@ -124,7 +124,7 @@ export default function DoctorDashboardPage() {
         .order("scheduled_at")
         .limit(5);
 
-      setUpcomingAppointments(upcomingAppts || []);
+      setUpcomingAppointments((upcomingAppts || []) as any);
 
       // Buscar estatísticas do mês
       const { data: monthAppts } = await supabase

@@ -1,0 +1,31 @@
+
+> mediconnect@0.1.0 build
+> next build
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\victo\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\victo\OneDrive\Documentos\telemed\package-lock.json
+
+   ▲ Next.js 16.0.8 (Turbopack)
+   - Environments: .env.local
+
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 23.8s
+   Running TypeScript ...
+Failed to compile.
+
+./src/app/dashboard/admin/audit-logs/page.tsx:185:24
+Type error: Cannot find name 'Badge'.
+
+[0m [90m 183 |[39m                   [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex-1 min-w-0"[39m[33m>[39m
+ [90m 184 |[39m                     [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex items-center gap-2 mb-1"[39m[33m>[39m
+[31m[1m>[22m[39m[90m 185 |[39m                       [33m<[39m[33mBadge[39m variant[33m=[39m[32m"outline"[39m[33m>[39m
+ [90m     |[39m                        [31m[1m^[22m[39m
+ [90m 186 |[39m                         {actionLabels[log[33m.[39maction] [33m||[39m log[33m.[39maction}
+ [90m 187 |[39m                       [33m<[39m[33m/[39m[33mBadge[39m[33m>[39m
+ [90m 188 |[39m                       [33m<[39m[33mspan[39m className[33m=[39m[32m"text-sm text-gray-500"[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null

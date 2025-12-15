@@ -46,15 +46,14 @@ export async function GET(
           full_name
         )
       `)
-      .eq("id", ticketId)
-      .single();
+      .eq("id", ticketId);
 
     // Se não for atendente/admin, só pode ver seus próprios tickets
     if (profile?.role !== "attendant" && profile?.role !== "admin") {
       ticketQuery = ticketQuery.eq("user_id", user.id);
     }
 
-    const { data: ticket, error: ticketError } = await ticketQuery;
+    const { data: ticket, error: ticketError } = await ticketQuery.single();
 
     if (ticketError) throw ticketError;
     if (!ticket) {

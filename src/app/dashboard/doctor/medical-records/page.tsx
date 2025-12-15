@@ -31,9 +31,9 @@ interface MedicalRecord {
     patients: {
       profiles: {
         full_name: string
-      }
-    }
-  }
+      }[]
+    }[]
+  }[]
 }
 
 export default function MedicalRecordsPage() {
@@ -89,7 +89,7 @@ export default function MedicalRecordsPage() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setRecords(data || [])
+      setRecords((data || []) as MedicalRecord[])
     } catch (error: any) {
       console.error('Erro ao carregar prontuários:', error)
     } finally {
@@ -134,7 +134,12 @@ export default function MedicalRecordsPage() {
                     <div className="flex items-center gap-3 mb-2">
                       <FileText className="w-5 h-5 text-primary-600" />
                       <h3 className="font-semibold text-lg">
-                        {record.appointments?.patients?.profiles?.full_name || 'Paciente'}
+                        {(() => {
+                          const appointment = Array.isArray(record.appointments) ? record.appointments[0] : record.appointments;
+                          const patient = Array.isArray(appointment?.patients) ? appointment.patients[0] : appointment?.patients;
+                          const profile = Array.isArray(patient?.profiles) ? patient.profiles[0] : patient?.profiles;
+                          return profile?.full_name || 'Paciente';
+                        })()}
                       </h3>
                       <div className="flex gap-2">
                         {record.signed ? (
@@ -160,9 +165,12 @@ export default function MedicalRecordsPage() {
                     <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
-                        {record.appointments?.scheduled_at
-                          ? format(new Date(record.appointments.scheduled_at), 'dd/MM/yyyy', { locale: ptBR })
-                          : format(new Date(record.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                        {(() => {
+                          const appointment = Array.isArray(record.appointments) ? record.appointments[0] : record.appointments;
+                          return appointment?.scheduled_at
+                            ? format(new Date(appointment.scheduled_at), 'dd/MM/yyyy', { locale: ptBR })
+                            : format(new Date(record.created_at), 'dd/MM/yyyy', { locale: ptBR });
+                        })()}
                       </div>
                       <div className="flex items-center gap-1">
                         <User className="w-4 h-4" />
