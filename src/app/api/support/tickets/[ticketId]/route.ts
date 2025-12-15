@@ -4,12 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 // GET - Buscar ticket específico com mensagens
 export async function GET(
   request: NextRequest,
-  { params }: { params: { ticketId: string } | Promise<{ ticketId: string }> }
+  { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
-    // Resolver params se for Promise (Next.js 15+)
-    const resolvedParams = params instanceof Promise ? await params : params;
-    const ticketId = resolvedParams.ticketId;
+    const { ticketId } = await params;
 
     // Validar ticketId ANTES de usar
     if (!ticketId || typeof ticketId !== 'string' || ticketId.trim() === '' || ticketId === 'undefined') {
@@ -84,7 +82,6 @@ export async function GET(
 
     return NextResponse.json({ ticket, messages });
   } catch (error: any) {
-    console.error("Erro ao buscar ticket:", error);
     return NextResponse.json(
       { error: error.message || "Erro ao buscar ticket" },
       { status: 500 }
@@ -95,12 +92,10 @@ export async function GET(
 // PATCH - Atualizar ticket (status, atribuição, etc)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { ticketId: string } | Promise<{ ticketId: string }> }
+  { params }: { params: Promise<{ ticketId: string }> }
 ) {
   try {
-    // Resolver params se for Promise (Next.js 15+)
-    const resolvedParams = params instanceof Promise ? await params : params;
-    const ticketId = resolvedParams.ticketId;
+    const { ticketId } = await params;
 
     // Validar ticketId ANTES de usar
     if (!ticketId || typeof ticketId !== 'string' || ticketId.trim() === '' || ticketId === 'undefined') {
@@ -169,7 +164,6 @@ export async function PATCH(
 
     return NextResponse.json({ ticket });
   } catch (error: any) {
-    console.error("Erro ao atualizar ticket:", error);
     return NextResponse.json(
       { error: error.message || "Erro ao atualizar ticket" },
       { status: 500 }
