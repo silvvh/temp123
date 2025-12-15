@@ -142,7 +142,8 @@ IMPORTANTE: Sua resposta deve ser APENAS um objeto JSON válido, sem markdown, s
 }`;
 
     // profiles é um array mesmo em relação 1:1, acessar primeiro elemento
-    const profile = Array.isArray(patient.profiles) ? patient.profiles[0] : patient.profiles;
+    const profiles = patient.profiles || [];
+    const profile = Array.isArray(profiles) ? profiles[0] : profiles;
     const patientAge = patient.birth_date
       ? calculateAge(new Date(patient.birth_date))
       : "Não informada";
