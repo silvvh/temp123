@@ -34,7 +34,10 @@ export function CheckoutButton({ appointmentId, amount }: CheckoutButtonProps) {
 
       // Redirecionar para Stripe Checkout
       const stripe = await stripePromise
-      const { error } = await stripe!.redirectToCheckout({
+      if (!stripe) {
+        throw new Error('Stripe não inicializado')
+      }
+      const { error } = await stripe.redirectToCheckout({
         sessionId: data.sessionId
       })
 
