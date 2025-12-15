@@ -9,7 +9,7 @@
 
 **Plataforma completa de telemedicina moderna e segura para o mercado brasileiro**
 
-[Funcionalidades](#-funcionalidades) • [Instalação](#-instalação) • [Arquitetura](#-arquitetura) • [Documentação](#-documentação)
+[Funcionalidades](#-funcionalidades) • [Instalação](#-instalação) • [Arquitetura](#-arquitetura) 
 
 </div>
 
