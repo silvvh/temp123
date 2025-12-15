@@ -35,8 +35,10 @@ function ParticipantTile({ participantId }: { participantId: string }) {
   }, [videoState.track]);
 
   const isLocal = participantId === localSessionId;
-  const isCameraOn = !videoState.isOff;
-  const isMicOn = !audioState.isOff;
+  // Verificar se câmera está ligada (track existe e não está desabilitado)
+  const isCameraOn = videoState.track !== null && videoState.track !== undefined;
+  // Verificar se microfone está ligado (track existe e não está desabilitado)
+  const isMicOn = audioState.track !== null && audioState.track !== undefined;
 
   return (
     <div className="relative bg-gray-800 rounded-xl overflow-hidden aspect-video">
@@ -90,12 +92,7 @@ function ParticipantTile({ participantId }: { participantId: string }) {
         </div>
       </div>
 
-      {/* Speaking Indicator */}
-      {isMicOn && audioState.isActive && (
-        <div className="absolute top-4 left-4">
-          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-        </div>
-      )}
+      {/* Speaking Indicator - Removido pois audioTrack.isActive não está disponível na API atual */}
     </div>
   );
 }
