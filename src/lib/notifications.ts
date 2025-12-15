@@ -43,8 +43,19 @@ export async function sendAppointmentNotification({
       throw new Error('Appointment not found')
     }
 
-    const patientEmail = appointment.patient.profiles.email
-    const doctorEmail = appointment.doctor.profiles.email
+    // profiles é um array mesmo em relação 1:1, acessar primeiro elemento
+    const patientProfilesArray = (appointment.patient as any).profiles || []
+    const doctorProfilesArray = (appointment.doctor as any).profiles || []
+    
+    const patientProfiles = Array.isArray(patientProfilesArray) 
+      ? patientProfilesArray[0] 
+      : patientProfilesArray
+    const doctorProfiles = Array.isArray(doctorProfilesArray) 
+      ? doctorProfilesArray[0] 
+      : doctorProfilesArray
+    
+    const patientEmail = patientProfiles?.email
+    const doctorEmail = doctorProfiles?.email
     const scheduledDate = new Date(appointment.scheduled_at)
     const formattedDate = scheduledDate.toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -59,11 +70,11 @@ export async function sendAppointmentNotification({
 
     switch (type) {
       case 'confirmation':
-        subject = `Consulta confirmada - ${appointment.doctor.profiles.full_name}`
+        subject = `Consulta confirmada - ${doctorProfiles?.full_name || 'Médico'}`
         html = `
           <h2>Consulta Confirmada</h2>
-          <p>Olá ${appointment.patient.profiles.full_name},</p>
-          <p>Sua consulta com Dr(a). ${appointment.doctor.profiles.full_name} foi confirmada.</p>
+          <p>Olá ${patientProfiles?.full_name || 'Paciente'},</p>
+          <p>Sua consulta com Dr(a). ${doctorProfiles?.full_name || 'Médico'} foi confirmada.</p>
           <p><strong>Data e Hora:</strong> ${formattedDate}</p>
           <p><strong>Especialidade:</strong> ${appointment.doctor.specialty}</p>
           <p>Você receberá um lembrete 24 horas antes da consulta.</p>
@@ -74,8 +85,8 @@ export async function sendAppointmentNotification({
         subject = `Lembrete: Consulta em 24 horas`
         html = `
           <h2>Lembrete de Consulta</h2>
-          <p>Olá ${appointment.patient.profiles.full_name},</p>
-          <p>Este é um lembrete de que sua consulta com Dr(a). ${appointment.doctor.profiles.full_name} está agendada para amanhã.</p>
+          <p>Olá ${patientProfiles?.full_name || 'Paciente'},</p>
+          <p>Este é um lembrete de que sua consulta com Dr(a). ${doctorProfiles?.full_name || 'Médico'} está agendada para amanhã.</p>
           <p><strong>Data e Hora:</strong> ${formattedDate}</p>
           <p>Por favor, esteja disponível alguns minutos antes do horário agendado.</p>
         `
@@ -85,8 +96,8 @@ export async function sendAppointmentNotification({
         subject = `Lembrete: Consulta em 1 hora`
         html = `
           <h2>Lembrete de Consulta</h2>
-          <p>Olá ${appointment.patient.profiles.full_name},</p>
-          <p>Sua consulta com Dr(a). ${appointment.doctor.profiles.full_name} está agendada para daqui a 1 hora.</p>
+          <p>Olá ${patientProfiles?.full_name || 'Paciente'},</p>
+          <p>Sua consulta com Dr(a). ${doctorProfiles?.full_name || 'Médico'} está agendada para daqui a 1 hora.</p>
           <p><strong>Data e Hora:</strong> ${formattedDate}</p>
           <p>Por favor, acesse a plataforma alguns minutos antes para entrar na sala de espera.</p>
         `
@@ -96,8 +107,8 @@ export async function sendAppointmentNotification({
         subject = `Consulta Cancelada`
         html = `
           <h2>Consulta Cancelada</h2>
-          <p>Olá ${appointment.patient.profiles.full_name},</p>
-          <p>Infelizmente, sua consulta com Dr(a). ${appointment.doctor.profiles.full_name} foi cancelada.</p>
+          <p>Olá ${patientProfiles?.full_name || 'Paciente'},</p>
+          <p>Infelizmente, sua consulta com Dr(a). ${doctorProfiles?.full_name || 'Médico'} foi cancelada.</p>
           <p><strong>Data e Hora original:</strong> ${formattedDate}</p>
           <p>Você pode agendar uma nova consulta através da plataforma.</p>
         `
@@ -107,8 +118,8 @@ export async function sendAppointmentNotification({
         subject = `Consulta Reagendada`
         html = `
           <h2>Consulta Reagendada</h2>
-          <p>Olá ${appointment.patient.profiles.full_name},</p>
-          <p>Sua consulta com Dr(a). ${appointment.doctor.profiles.full_name} foi reagendada.</p>
+          <p>Olá ${patientProfiles?.full_name || 'Paciente'},</p>
+          <p>Sua consulta com Dr(a). ${doctorProfiles?.full_name || 'Médico'} foi reagendada.</p>
           <p><strong>Nova Data e Hora:</strong> ${formattedDate}</p>
           <p>Por favor, confirme sua disponibilidade para o novo horário.</p>
         `
@@ -137,7 +148,7 @@ export async function sendAppointmentNotification({
         body: JSON.stringify({
           to: doctorEmail,
           subject: `Notificação: ${subject}`,
-          html: html.replace(appointment.patient.profiles.full_name, 'Dr(a). ' + appointment.doctor.profiles.full_name),
+          html: html.replace(patientProfiles?.full_name || 'Paciente', 'Dr(a). ' + (doctorProfiles?.full_name || 'Médico')),
           type: 'appointment_notification'
         })
       })

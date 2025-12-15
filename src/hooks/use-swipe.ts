@@ -14,7 +14,7 @@ export function useSwipe({
   onSwipeRight,
   threshold = 50,
   preventDefault = false,
-}: UseSwipeOptions = {}): RefObject<HTMLDivElement> {
+}: UseSwipeOptions = {}) {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const elementRef = useRef<HTMLDivElement>(null);
