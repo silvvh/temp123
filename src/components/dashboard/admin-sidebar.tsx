@@ -90,7 +90,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
         } else {
           setProfile({
             full_name: user.email?.split("@")[0] || "Admin",
-            email: user.email,
+            email: user.email || null,
           });
         }
       }
