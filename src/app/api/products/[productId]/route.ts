@@ -4,9 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 // PATCH - Atualizar produto
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
+    const { productId } = await params
     const supabase = await createClient();
     const {
       data: { user },
@@ -43,7 +44,7 @@ export async function PATCH(
     const { data: product, error } = await supabase
       .from("products")
       .update(updateData)
-      .eq("id", params.productId)
+      .eq("id", productId)
       .select()
       .single();
 
@@ -51,7 +52,6 @@ export async function PATCH(
 
     return NextResponse.json({ product });
   } catch (error: any) {
-    console.error("Erro ao atualizar produto:", error);
     return NextResponse.json(
       { error: error.message || "Erro ao atualizar produto" },
       { status: 500 }
@@ -62,9 +62,10 @@ export async function PATCH(
 // DELETE - Deletar produto
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: Promise<{ productId: string }> }
 ) {
   try {
+    const { productId } = await params
     const supabase = await createClient();
     const {
       data: { user },
@@ -90,13 +91,12 @@ export async function DELETE(
     const { error } = await supabase
       .from("products")
       .delete()
-      .eq("id", params.productId);
+      .eq("id", productId);
 
     if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Erro ao deletar produto:", error);
     return NextResponse.json(
       { error: error.message || "Erro ao deletar produto" },
       { status: 500 }
